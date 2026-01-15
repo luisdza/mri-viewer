@@ -65,16 +65,19 @@ export function TopBar() {
     <header className="h-14 bg-viewer-panel border-b border-viewer-border flex items-center px-4 shadow-lg z-50">
       {/* Left section: Back button and app branding */}
       <div className="flex items-center gap-3 min-w-[200px]">
-        <button className="flex items-center gap-1 text-viewer-text-muted hover:text-viewer-text transition-colors">
-          <ChevronLeft size={18} />
+        <button 
+          className="flex items-center gap-1 text-viewer-text-muted hover:text-viewer-text transition-colors"
+          aria-label="Go back to previous page"
+        >
+          <ChevronLeft size={18} aria-hidden="true" />
           <span className="text-sm">Back</span>
         </button>
         
         <div className="flex items-center gap-2 ml-2">
-          <div className="w-8 h-8 bg-viewer-accent rounded flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-8 h-8 bg-viewer-accent rounded flex items-center justify-center text-white font-bold text-sm" role="img" aria-label="MRI Viewer logo">
             MR
           </div>
-          <span className="font-semibold text-viewer-text">MRI Viewer</span>
+          <h1 className="font-semibold text-viewer-text text-base">MRI Viewer</h1>
         </div>
         
         {/* Patient info */}

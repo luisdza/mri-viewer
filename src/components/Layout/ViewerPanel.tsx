@@ -59,16 +59,21 @@ export function ViewerPanel() {
       <div className="px-4 py-3 bg-viewer-panel border-t border-viewer-border">
         {/* Slice slider */}
         <div className="flex items-center gap-4 mb-4">
-          <span className="text-sm text-viewer-text whitespace-nowrap">
+          <label htmlFor="slice-slider" className="text-sm text-viewer-text whitespace-nowrap">
             Slice: {currentSliceIndex} / {maxSlices}
-          </span>
+          </label>
           <input
+            id="slice-slider"
             type="range"
             min={1}
             max={maxSlices}
             value={Math.min(currentSliceIndex, maxSlices)}
             onChange={(e) => setSliceIndex(Number(e.target.value))}
             className="flex-1 h-1.5"
+            aria-label={`Slice navigation, current slice ${currentSliceIndex} of ${maxSlices}`}
+            aria-valuemin={1}
+            aria-valuemax={maxSlices}
+            aria-valuenow={currentSliceIndex}
           />
         </div>
 
@@ -76,36 +81,46 @@ export function ViewerPanel() {
         <div className="flex items-center gap-6">
           {/* Brightness slider */}
           <div className="flex items-center gap-3 flex-1">
-            <span className="text-xs text-viewer-text-muted uppercase tracking-wider w-24">
+            <label htmlFor="brightness-slider" className="text-xs text-viewer-text-muted uppercase tracking-wider w-24">
               Brightness
-            </span>
+            </label>
             <input
+              id="brightness-slider"
               type="range"
               min={0}
               max={200}
               defaultValue={100}
               onChange={(e) => handleBrightnessChange(Number(e.target.value))}
               className="flex-1 h-1.5"
+              aria-label={`Brightness adjustment, current value ${brightness}%`}
+              aria-valuemin={0}
+              aria-valuemax={200}
+              aria-valuenow={brightness}
             />
-            <span className="text-xs text-viewer-text-muted w-10 text-right">
+            <span className="text-xs text-viewer-text-muted w-10 text-right" aria-live="polite">
               {brightness}%
             </span>
           </div>
 
           {/* Contrast slider */}
           <div className="flex items-center gap-3 flex-1">
-            <span className="text-xs text-viewer-text-muted uppercase tracking-wider w-24">
+            <label htmlFor="contrast-slider" className="text-xs text-viewer-text-muted uppercase tracking-wider w-24">
               Contrast
-            </span>
+            </label>
             <input
+              id="contrast-slider"
               type="range"
               min={0}
               max={200}
               defaultValue={100}
               onChange={(e) => handleContrastChange(Number(e.target.value))}
               className="flex-1 h-1.5"
+              aria-label={`Contrast adjustment, current value ${contrast}%`}
+              aria-valuemin={0}
+              aria-valuemax={200}
+              aria-valuenow={contrast}
             />
-            <span className="text-xs text-viewer-text-muted w-10 text-right">
+            <span className="text-xs text-viewer-text-muted w-10 text-right" aria-live="polite">
               {contrast}%
             </span>
           </div>

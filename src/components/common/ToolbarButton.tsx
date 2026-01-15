@@ -35,6 +35,8 @@ export function ToolbarButton({
         ${className}
       `}
       title={label}
+      aria-label={label}
+      aria-pressed={active}
       {...props}
     >
       {icon}
