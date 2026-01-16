@@ -24,6 +24,7 @@ function modulePreloadPlugin(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/mri-viewer/',
   plugins: [wasm(), topLevelAwait(), react(), modulePreloadPlugin()],
   assetsInclude: ['**/*.wasm'],
   // Required for Cornerstone3D to work with SharedArrayBuffer
