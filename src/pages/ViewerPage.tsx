@@ -1,5 +1,6 @@
 import { TopBar, BodyRegionsSidebar, RightSidebar, ViewerPanel } from '../components/Layout';
 import { DicomImportModal } from '../components/common';
+import { ViewerStoreProvider } from '../store/viewerStore';
 
 /**
  * Viewer Page - Full MRI viewer with Cornerstone3D
@@ -7,24 +8,26 @@ import { DicomImportModal } from '../components/common';
  */
 export function ViewerPage() {
   return (
-    <div id="main-content" className="h-screen w-screen flex flex-col bg-viewer-bg text-viewer-text overflow-hidden">
-      {/* Fixed top navigation bar */}
-      <TopBar />
-      
-      {/* Main content area with 3-column layout */}
-      <div className="flex-1 flex min-h-0">
-        {/* Left sidebar: Body regions and series navigation */}
-        <BodyRegionsSidebar />
+    <ViewerStoreProvider>
+      <div id="main-content" className="h-screen w-screen flex flex-col bg-viewer-bg text-viewer-text overflow-hidden">
+        {/* Fixed top navigation bar */}
+        <TopBar />
         
-        {/* Center: Main viewport and controls */}
-        <ViewerPanel />
+        {/* Main content area with 3-column layout */}
+        <div className="flex-1 flex min-h-0">
+          {/* Left sidebar: Body regions and series navigation */}
+          <BodyRegionsSidebar />
+          
+          {/* Center: Main viewport and controls */}
+          <ViewerPanel />
+          
+          {/* Right sidebar: Study info, report, series table */}
+          <RightSidebar />
+        </div>
         
-        {/* Right sidebar: Study info, report, series table */}
-        <RightSidebar />
+        {/* DICOM Import Modal */}
+        <DicomImportModal />
       </div>
-      
-      {/* DICOM Import Modal */}
-      <DicomImportModal />
-    </div>
+    </ViewerStoreProvider>
   );
 }

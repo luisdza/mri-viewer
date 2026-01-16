@@ -65,7 +65,7 @@ export default defineConfig({
           'cornerstone-core': ['@cornerstonejs/core'],
           'cornerstone-tools': ['@cornerstonejs/tools'],
           'cornerstone-loader': ['@cornerstonejs/dicom-image-loader', 'dicom-parser'],
-          'vendor': ['react', 'react-dom', 'zustand'],
+          'vendor': ['react', 'react-dom'],
         },
       },
     },

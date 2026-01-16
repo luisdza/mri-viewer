@@ -9,7 +9,7 @@ cd mri-viewer-clone
 npm install
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
-npm install zustand lucide-react @cornerstonejs/core @cornerstonejs/tools @cornerstonejs/dicom-image-loader dicom-parser
+npm install lucide-react @cornerstonejs/core @cornerstonejs/tools @cornerstonejs/dicom-image-loader dicom-parser
 -->
 
 ## Features
@@ -80,7 +80,7 @@ src/
 │   ├── cornerstoneInit.ts   # Cornerstone3D initialization
 │   └── dicomImporter.ts     # DICOM file parsing and grouping
 ├── store/
-│   └── viewerStore.ts       # Zustand state management
+│   └── viewerStore.ts       # React context state management
 ├── types/
 │   └── index.ts             # TypeScript type definitions
 ├── App.tsx                  # Main application component
@@ -108,7 +108,7 @@ The `src/lib/dicomImporter.ts` module handles:
 
 ## State Management
 
-The Zustand store (`src/store/viewerStore.ts`) manages:
+The React context store (`src/store/viewerStore.ts`) manages:
 
 ### DICOM State
 - `dicomStudies` - Imported study/series hierarchy
@@ -163,7 +163,7 @@ Custom color palette in `tailwind.config.js`:
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
 - **Tailwind CSS** - Utility-first styling
-- **Zustand** - State management
+- **React Context** - State management
 - **Cornerstone3D** - Medical imaging rendering
 - **@cornerstonejs/dicom-image-loader** - DICOM file loading
 - **dicom-parser** - DICOM metadata extraction

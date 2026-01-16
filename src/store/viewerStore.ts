@@ -1,28 +1,46 @@
-import { create } from 'zustand';
-import type { ViewerState, DicomStudy } from '../types';
+import { createContext, createElement, useCallback, useContext, useMemo, useState } from 'react';
+import type { ViewerState, DicomStudy, LoadingState } from '../types';
 import { findSeriesByUID } from '../lib/dicomImporter';
 
 /**
- * Global state store using Zustand
+ * Global state store using React context
  * Manages all viewer state including selection, viewport settings, DICOM data, and UI state
  */
-export const useViewerStore = create<ViewerState>((set, get) => ({
+type ViewerActionKeys =
+  | 'setSelectedRegion'
+  | 'setSelectedSeries'
+  | 'setSliceIndex'
+  | 'setZoom'
+  | 'setBrightness'
+  | 'setContrast'
+  | 'setActivePanel'
+  | 'toggleRegionExpanded'
+  | 'setShowImportModal'
+  | 'setDicomStudies'
+  | 'selectDicomSeries'
+  | 'setLoadingState'
+  | 'setErrorMessage'
+  | 'resetDicomState';
+
+type ViewerStateData = Omit<ViewerState, ViewerActionKeys>;
+
+const initialState: ViewerStateData = {
   // Initial selection state
   selectedRegionId: 'spine',
   selectedSeriesId: 'spine-sagittal-t2',
-  
+
   // Initial viewport state
   currentSliceIndex: 28,
   totalSlices: 95,
   zoom: 2.8,
   brightness: 100,
   contrast: 100,
-  
+
   // Initial UI state
   activePanel: 'report',
   expandedRegions: ['spine'], // Spine region is expanded by default
   showImportModal: false,
-  
+
   // DICOM state
   dicomStudies: [],
   selectedDicomSeriesUID: null,
@@ -31,49 +49,83 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
   loadingMessage: '',
   errorMessage: null,
   hasDicomLoaded: false,
-  
-  // Actions
-  setSelectedRegion: (regionId) => set({ selectedRegionId: regionId }),
-  
-  setSelectedSeries: (seriesId, totalSlices) => set({
-    selectedSeriesId: seriesId,
-    totalSlices: totalSlices,
-    currentSliceIndex: 1, // Reset to first slice when changing series
-  }),
-  
-  setSliceIndex: (index) => set({ currentSliceIndex: index }),
-  
-  setZoom: (zoom) => set({ zoom: Math.max(0.5, Math.min(10, zoom)) }), // Clamp between 0.5x and 10x
-  
-  setBrightness: (brightness) => set({ brightness: Math.max(0, Math.min(200, brightness)) }),
-  
-  setContrast: (contrast) => set({ contrast: Math.max(0, Math.min(200, contrast)) }),
-  
-  setActivePanel: (panel) => set({ activePanel: panel }),
-  
-  toggleRegionExpanded: (regionId) => set((state) => ({
-    expandedRegions: state.expandedRegions.includes(regionId)
-      ? state.expandedRegions.filter((id) => id !== regionId)
-      : [...state.expandedRegions, regionId],
-  })),
-  
-  // DICOM actions
-  setShowImportModal: (show) => set({ showImportModal: show }),
-  
-  setDicomStudies: (studies: DicomStudy[]) => {
+};
+
+const ViewerStoreContext = createContext<ViewerState | null>(null);
+
+export function ViewerStoreProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState<ViewerStateData>(initialState);
+
+  const setSelectedRegion = useCallback((regionId: string) => {
+    setState((prev) => ({ ...prev, selectedRegionId: regionId }));
+  }, []);
+
+  const setSelectedSeries = useCallback((seriesId: string, totalSlices: number) => {
+    setState((prev) => ({
+      ...prev,
+      selectedSeriesId: seriesId,
+      totalSlices,
+      currentSliceIndex: 1,
+    }));
+  }, []);
+
+  const setSliceIndex = useCallback((index: number) => {
+    setState((prev) => ({ ...prev, currentSliceIndex: index }));
+  }, []);
+
+  const setZoom = useCallback((zoom: number) => {
+    setState((prev) => ({
+      ...prev,
+      zoom: Math.max(0.5, Math.min(10, zoom)),
+    }));
+  }, []);
+
+  const setBrightness = useCallback((brightness: number) => {
+    setState((prev) => ({
+      ...prev,
+      brightness: Math.max(0, Math.min(200, brightness)),
+    }));
+  }, []);
+
+  const setContrast = useCallback((contrast: number) => {
+    setState((prev) => ({
+      ...prev,
+      contrast: Math.max(0, Math.min(200, contrast)),
+    }));
+  }, []);
+
+  const setActivePanel = useCallback((panel: 'report' | 'info') => {
+    setState((prev) => ({ ...prev, activePanel: panel }));
+  }, []);
+
+  const toggleRegionExpanded = useCallback((regionId: string) => {
+    setState((prev) => ({
+      ...prev,
+      expandedRegions: prev.expandedRegions.includes(regionId)
+        ? prev.expandedRegions.filter((id) => id !== regionId)
+        : [...prev.expandedRegions, regionId],
+    }));
+  }, []);
+
+  const setShowImportModal = useCallback((show: boolean) => {
+    setState((prev) => ({ ...prev, showImportModal: show }));
+  }, []);
+
+  const setDicomStudies = useCallback((studies: DicomStudy[]) => {
     // Auto-select first series if available
     let selectedUID: string | null = null;
     let imageIds: string[] = [];
     let sliceCount = 0;
-    
+
     if (studies.length > 0 && studies[0].series.length > 0) {
       const firstSeries = studies[0].series[0];
       selectedUID = firstSeries.seriesInstanceUID;
       imageIds = firstSeries.imageIds;
       sliceCount = firstSeries.instances.length;
     }
-    
-    set({
+
+    setState((prev) => ({
+      ...prev,
       dicomStudies: studies,
       selectedDicomSeriesUID: selectedUID,
       currentImageIds: imageIds,
@@ -82,39 +134,100 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
       hasDicomLoaded: studies.length > 0,
       loadingState: 'success',
       loadingMessage: '',
-    });
-  },
-  
-  selectDicomSeries: (seriesUID: string) => {
-    const { dicomStudies } = get();
-    const result = findSeriesByUID(dicomStudies, seriesUID);
-    
-    if (result) {
-      set({
+    }));
+  }, []);
+
+  const selectDicomSeries = useCallback((seriesUID: string) => {
+    setState((prev) => {
+      const result = findSeriesByUID(prev.dicomStudies, seriesUID);
+
+      if (!result) {
+        return prev;
+      }
+
+      return {
+        ...prev,
         selectedDicomSeriesUID: seriesUID,
         currentImageIds: result.series.imageIds,
         totalSlices: result.series.instances.length,
         currentSliceIndex: 1,
-      });
-    }
-  },
-  
-  setLoadingState: (state, message = '') => set({
-    loadingState: state,
-    loadingMessage: message,
-  }),
-  
-  setErrorMessage: (message) => set({ errorMessage: message }),
-  
-  resetDicomState: () => set({
-    dicomStudies: [],
-    selectedDicomSeriesUID: null,
-    currentImageIds: [],
-    loadingState: 'idle',
-    loadingMessage: '',
-    errorMessage: null,
-    hasDicomLoaded: false,
-    currentSliceIndex: 1,
-    totalSlices: 95, // Reset to mock default
-  }),
-}));
+      };
+    });
+  }, []);
+
+  const setLoadingState = useCallback((loadingState: LoadingState, message = '') => {
+    setState((prev) => ({
+      ...prev,
+      loadingState,
+      loadingMessage: message,
+    }));
+  }, []);
+
+  const setErrorMessage = useCallback((message: string | null) => {
+    setState((prev) => ({ ...prev, errorMessage: message }));
+  }, []);
+
+  const resetDicomState = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      dicomStudies: [],
+      selectedDicomSeriesUID: null,
+      currentImageIds: [],
+      loadingState: 'idle',
+      loadingMessage: '',
+      errorMessage: null,
+      hasDicomLoaded: false,
+      currentSliceIndex: 1,
+      totalSlices: 95,
+    }));
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      setSelectedRegion,
+      setSelectedSeries,
+      setSliceIndex,
+      setZoom,
+      setBrightness,
+      setContrast,
+      setActivePanel,
+      toggleRegionExpanded,
+      setShowImportModal,
+      setDicomStudies,
+      selectDicomSeries,
+      setLoadingState,
+      setErrorMessage,
+      resetDicomState,
+    }),
+    [
+      state,
+      setSelectedRegion,
+      setSelectedSeries,
+      setSliceIndex,
+      setZoom,
+      setBrightness,
+      setContrast,
+      setActivePanel,
+      toggleRegionExpanded,
+      setShowImportModal,
+      setDicomStudies,
+      selectDicomSeries,
+      setLoadingState,
+      setErrorMessage,
+      resetDicomState,
+    ]
+  );
+
+  return createElement(ViewerStoreContext.Provider, { value }, children);
+}
+
+export function useViewerStore(): ViewerState {
+  const context = useContext(ViewerStoreContext);
+
+  if (!context) {
+    throw new Error('useViewerStore must be used within ViewerStoreProvider');
+  }
+
+  return context;
+}

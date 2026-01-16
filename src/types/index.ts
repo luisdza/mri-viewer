@@ -102,7 +102,7 @@ export interface DicomImportResult {
 /** Loading state for DICOM operations */
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 
-/** Viewer state managed by Zustand */
+/** Viewer state managed by the React context store */
 export interface ViewerState {
   // Selection state
   selectedRegionId: string | null;
