@@ -13,7 +13,7 @@
     "lighthouse:devtools": "echo 'Opening DevTools instructions...' && start chrome://inspect"
   },
   "dependencies": {
-    "@cornerstonejs/core": "^1.86.1",
+    "@cornerstonejs/core": "^4.15.18",
     "@cornerstonejs/dicom-image-loader": "^1.86.0",
     "@cornerstonejs/tools": "^1.86.1",
     "dicom-parser": "^1.8.21",
